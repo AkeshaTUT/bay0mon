@@ -55,7 +55,7 @@ FACEIT_API_KEY = "40cff481-5d7f-4dba-8930-3dfca35bbc89"
 CYBERSHOKE_URL = "https://cybershoke.net/ru/cs2/servers/duels"
 
 # Настройки Telegram
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8141719664:AAF_tIyGTroxr81HV8GGatvsKu1oL22dDAc")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8012263704:AAFw3ryC0NuNsGcCRbftZG_k5wL7AdHG_nA")
 SUBSCRIBERS_FILE = os.environ.get("SUBSCRIBERS_FILE", "subscribers.json")
 os.makedirs(os.path.dirname(SUBSCRIBERS_FILE), exist_ok=True) if os.path.dirname(SUBSCRIBERS_FILE) else None
 
