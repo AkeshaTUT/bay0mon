@@ -663,7 +663,15 @@ def bot_polling():
     """Запускает опрос Telegram серверов в отдельном потоке."""
     while True:
         try:
-            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+            bot.infinity_polling(timeout=10, long_polling_timeout=5, skip_pending=True)
+        except telebot.apihelper.ApiTelegramException as e:
+            if e.error_code == 409:
+                # Другой экземпляр бота ещё жив (Railway redeploy). Ждём пока он умрёт.
+                print("[!] 409 Conflict: старый экземпляр ещё работает. Жду 30 сек...")
+                time.sleep(30)
+            else:
+                print(f"[!] Ошибка Telegram API: {e}")
+                time.sleep(5)
         except Exception as e:
             print(f"[!] Ошибка Telegram бота: {e}")
             time.sleep(5)
