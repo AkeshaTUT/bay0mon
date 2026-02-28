@@ -37,6 +37,16 @@ from selenium.common.exceptions import (
     WebDriverException,
 )
 
+# ── UTF-8 stdout (fix UnicodeEncodeError на Windows) ────────
+import io
+try:
+    if hasattr(sys.stdout, 'buffer'):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, 'buffer'):
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+except Exception:
+    pass
+
 # ── ANSI на Windows ─────────────────────────────────────────
 if sys.platform == "win32":
     try:
@@ -168,7 +178,7 @@ select_category_only_mirage = lambda d: select_category(d, "ONLY MIRAGE")
 def scroll_and_collect(driver: webdriver.Chrome) -> list[dict]:
     """Прокручивает страницу вниз И одновременно собирает сервера в DOM.
     Решает проблему виртуализированного ленивого списка: карточки вне видимасти могут выгружаться из DOM."""
-    print("    [~] Прокручиваем страницу и собиႈаем сервера...")
+    print("    [~] Прокручиваем страницу и собираем сервера...")
     seen: dict[str, dict] = {}   # text -> server dict
 
     def _collect_visible():
@@ -302,12 +312,12 @@ def scroll_and_collect(driver: webdriver.Chrome) -> list[dict]:
     time.sleep(0.5)
 
     result = list(seen.values())
-    # Фильтႈуем: онлайн > 0 ИЛИ онлайн неизвестен (-1) —
-    # некотоႈые категоႈии (напႈ. ARENA MAPS) имеют дႈугую HTML-с႐ႈуктуႈу,
-    # и онлайн пႈосто не паႈсится. В этом случае пускаем сеႈвеႈ пႈойти до модалки.
+    # Фильтруем: онлайн > 0 ИЛИ онлайн неизвестен (-1) —
+    # некоторые категории (напр. ARENA MAPS) имеют другую HTML-структуру,
+    # и онлайн просто не парсится. В этом случае пускаем сервер пройти до модалки.
     result_to_check = [d for d in result if d["online"] > 0 or d["online"] == -1]
     result_zero     = [d for d in result if d["online"] == 0]
-    print(f"    [+] Собႈано сеႈвеႈов: {len(result)} (пႈовеႈяем: {len(result_to_check)}, пус႐ых online=0: {len(result_zero)})")
+    print(f"    [+] Собрано серверов: {len(result)} (проверяем: {len(result_to_check)}, пустых online=0: {len(result_zero)})")
     return result_to_check
 
 
@@ -317,7 +327,7 @@ def scroll_to_bottom(driver: webdriver.Chrome) -> None:
 
 
 def collect_server_list(driver: webdriver.Chrome) -> list[dict]:
-    """[deprecated] Используйте scroll_and_collect. Оставлено для обႈатной совместимости."""
+    """[deprecated] Используйте scroll_and_collect. Оставлено для обратной совместимости."""
     return scroll_and_collect(driver)
 
 
@@ -784,7 +794,7 @@ def scan_servers() -> None:
         driver.get(CYBERSHOKE_URL)
         time.sleep(8)
         
-        select_category(driver, "ONLY MIRAGE")
+        select_category(driver, "ALL MAPS")
 
         servers = scroll_and_collect(driver)
 
@@ -816,7 +826,7 @@ def scan_servers() -> None:
                 driver = build_driver()
                 driver.get(CYBERSHOKE_URL)
                 time.sleep(8)
-                select_category(driver, "ONLY MIRAGE")
+                select_category(driver, "ALL MAPS")
                 servers = scroll_and_collect(driver)
                 total = len(servers)
                 continue
