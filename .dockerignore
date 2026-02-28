@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+html_dumps/
+*.html
+*.json
+debug_*.py
+test_*.py
+dump_html.py
