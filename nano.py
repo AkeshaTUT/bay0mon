@@ -73,20 +73,6 @@ CHECK_INTERVAL = 5 * 60   # 5 минут
 #   WEBDRIVER
 # ============================================================
 
-_chromedriver_path: str | None = None
-
-def _get_chromedriver() -> str | None:
-    global _chromedriver_path
-    if _chromedriver_path:
-        return _chromedriver_path
-    try:
-        from webdriver_manager.chrome import ChromeDriverManager
-        _chromedriver_path = ChromeDriverManager().install()
-    except Exception:
-        _chromedriver_path = None
-    return _chromedriver_path
-
-
 def build_driver() -> webdriver.Chrome:
     opts = Options()
     opts.add_argument("--headless=new")
@@ -102,10 +88,16 @@ def build_driver() -> webdriver.Chrome:
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     )
 
-    path = _get_chromedriver()
-    if path:
-        drv = webdriver.Chrome(service=Service(path), options=opts)
+    # На Linux (Docker) используем system chromedriver если есть, иначе selenium-manager
+    import shutil
+    chrome_bin = os.environ.get("CHROME_BIN") or shutil.which("chromium") or shutil.which("google-chrome")
+    if chrome_bin:
+        opts.binary_location = chrome_bin
+    system_chromedriver = shutil.which("chromedriver")
+    if system_chromedriver:
+        drv = webdriver.Chrome(service=Service(system_chromedriver), options=opts)
     else:
+        # selenium >= 4.6 имеет встроенный selenium-manager — сам скачает chromedriver
         drv = webdriver.Chrome(options=opts)
 
     drv.set_page_load_timeout(30)
@@ -941,8 +933,6 @@ def run_monitor() -> None:
         print("    (Напишите боту /start и /subscribe в Telegram)")
     else:
         print("[!] Токен Telegram бота не указан. Уведомления отключены.")
-
-    _get_chromedriver()
 
     while True:
         try:
