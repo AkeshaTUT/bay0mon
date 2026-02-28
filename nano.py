@@ -670,21 +670,28 @@ def set_level(message):
         bot.reply_to(message, "⚠️ Пожалуйста, введите корректное число.")
 
 def bot_polling():
-    """Запускает опрос Telegram серверов в отдельном потоке."""
+    """Запускает опрос Telegram серверов в отдельном потоке.
+    Использует polling(none_stop=False) вместо infinity_polling, чтобы
+    исключения (409 Conflict) выбрасывались наружу и мы могли их поймать."""
     while True:
         try:
-            bot.infinity_polling(timeout=10, long_polling_timeout=5, skip_pending=True)
+            bot.stop_polling()  # сбросить старое состояние если было
+        except Exception:
+            pass
+        try:
+            # none_stop=False — при ошибке сразу бросает исключение (не глотает внутри)
+            bot.polling(none_stop=False, timeout=10, long_polling_timeout=5, skip_pending=True)
         except telebot.apihelper.ApiTelegramException as e:
             if e.error_code == 409:
-                # Другой экземпляр бота ещё жив (Railway redeploy). Ждём пока он умрёт.
-                print("[!] 409 Conflict: старый экземпляр ещё работает. Жду 30 сек...")
-                time.sleep(30)
+                # Другой контейнер (старый Railway) ещё жив. Ждём 60 сек пока умрёт.
+                print("[!] 409 Conflict: старый экземпляр ещё работает. Жду 60 сек...")
+                time.sleep(60)
             else:
                 print(f"[!] Ошибка Telegram API: {e}")
-                time.sleep(5)
+                time.sleep(10)
         except Exception as e:
             print(f"[!] Ошибка Telegram бота: {e}")
-            time.sleep(5)
+            time.sleep(10)
 
 # ============================================================
 #   УВЕДОМЛЕНИЕ
