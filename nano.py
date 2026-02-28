@@ -16,10 +16,13 @@ CyberShoke Player Monitor v5.1
 
 from __future__ import annotations
 
+import os
+# Принудительно UTF-8 на Windows ДО любых других импортов
+os.environ.setdefault("PYTHONUTF8", "1")
+
 import time
 import json
 import sys
-import os
 import threading
 import traceback
 import requests
